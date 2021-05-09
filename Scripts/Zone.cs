@@ -17,7 +17,6 @@ namespace WorldQuest
             _players = GetComponent<Players>();
         }
 
-        [ServerCallback]
         private void OnTriggerEnter(Collider other)
         {
             var player = other.GetComponentInParent<Player>();
@@ -31,7 +30,6 @@ namespace WorldQuest
             }
         }
 
-        [ServerCallback]
         private void OnTriggerExit(Collider other)
         {
             var player = other.GetComponentInParent<Player>();

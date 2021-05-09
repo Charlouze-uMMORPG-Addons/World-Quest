@@ -1,18 +1,20 @@
 ﻿using System;
-using System.Collections.Generic;
 using Mirror;
 using UnityEngine;
 using UnityEngine.Events;
 
 namespace WorldQuest
 {
-    [Serializable] public class UnityEventTier : UnityEvent<Tier> {}
-    
+    [Serializable] public class UnityEventTier : UnityEvent<Tier>
+    {
+    }
+
     [RequireComponent(typeof(NetworkIdentity))]
     public class Manager : NetworkBehaviour
     {
-        public string description;
-        
+        [SerializeField]
+        public string _description;
+
         public Tier[] tiers;
 
         public UnityEventTier onTierSetup;
@@ -25,6 +27,8 @@ namespace WorldQuest
         {
             get => tiers[_currentTierIndex];
         }
+
+        public string Description => _description + "\n\n" + CurrentTier.Description;
 
         [ServerCallback]
         private void Start()
@@ -41,6 +45,8 @@ namespace WorldQuest
                     TearDown(tier);
                 }
             }
+            
+            
         }
 
         [ServerCallback]
@@ -60,16 +66,36 @@ namespace WorldQuest
             }
         }
 
+        [ClientCallback]
+        public void Register(Player player)
+        {
+            if (player == Player.localPlayer)
+            {
+                player.GetComponent<PlayerWorldQuests>().managers.Add(this);
+            }
+        }
+
+        [ClientCallback]
+        public void Unregister(Player player)
+        {
+            if (player == Player.localPlayer)
+            {
+                player.GetComponent<PlayerWorldQuests>().managers.Remove(this);
+            }
+        }
+
         private void Setup(Tier tier)
         {
             tier.gameObject.SetActive(true);
+            tier.Setup();
             onTierSetup.Invoke(tier);
         }
 
         private void TearDown(Tier tier)
         {
-            tier.gameObject.SetActive(false);
             onTierTearDown.Invoke(tier);
+            tier.TearDown();
+            tier.gameObject.SetActive(false);
         }
 
         private void NextTier()

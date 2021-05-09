@@ -4,34 +4,51 @@ using UnityEngine;
 
 namespace WorldQuest
 {
+    [RequireComponent(typeof(Manager))]
     public class Players : NetworkBehaviour
     {
-        private HashSet<Player> players = new HashSet<Player>();
+        public UnityEventPlayer onPlayerEnter = new UnityEventPlayer();
 
-        [Server]
+        public UnityEventPlayer onPlayerLeave = new UnityEventPlayer();
+
+        private readonly HashSet<Player> players = new HashSet<Player>();
+
         public void Register(Tier tier, Player player)
         {
-            if (players.Contains(player))
+            if (isServer)
             {
-                Debug.LogFormat("Player '{0}' is already registered to world quest '{1}'", player.name, transform.parent.name);
-                return;
-            }
-            Debug.LogFormat("Registering player '{0}' to world quest '{1}'", player.name, transform.parent.name);
-            players.Add(player);
-            SetupPlayer(tier, player);
-        }
+                if (players.Contains(player))
+                {
+                    Debug.LogFormat("Player '{0}' is already registered to world quest '{1}'", player.name,
+                        transform.parent.name);
+                    return;
+                }
 
-        [Server]
+                Debug.LogFormat("Registering player '{0}' to world quest '{1}'", player.name, transform.parent.name);
+                players.Add(player);
+                SetupPlayer(tier, player);
+            }
+
+            onPlayerEnter.Invoke(player);
+        }
+        
         public void Unregister(Tier tier, Player player)
         {
-            if (!players.Contains(player))
+            if (isServer)
             {
-                Debug.LogFormat("Player '{0}' is not registered to world quest '{1}'", player.name, transform.parent.name);
-                return;
+                if (!players.Contains(player))
+                {
+                    Debug.LogFormat("Player '{0}' is not registered to world quest '{1}'", player.name,
+                        transform.parent.name);
+                    return;
+                }
+
+                Debug.LogFormat("Unregistering player '{0}' to world quest '{1}'", player.name, transform.parent.name);
+                players.Remove(player);
+                TearDownPlayer(tier, player);
             }
-            Debug.LogFormat("Unregistering player '{0}' to world quest '{1}'", player.name, transform.parent.name);
-            players.Remove(player);
-            TearDownPlayer(tier, player);
+
+            onPlayerLeave.Invoke(player);
         }
 
         [Server]

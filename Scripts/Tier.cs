@@ -1,12 +1,12 @@
-﻿using System;
-using Mirror;
+﻿using Mirror;
 using UnityEngine;
 
 namespace WorldQuest
 {
     public class Tier : NetworkBehaviour
     {
-        public string description;
+        [SerializeField]
+        private string _description;
 
         public InstanceSpawnPoint[] spawnPoints;
 
@@ -14,16 +14,18 @@ namespace WorldQuest
 
         private GameObject[] _spawnedGameObjects;
 
-        [ServerCallback]
-        private void OnEnable()
+        public string Description
         {
-            Setup();
-        }
+            get
+            {
+                var desc = _description + "\n";
+                foreach (var goal in goals)
+                {
+                    desc = desc + "\n" + goal.Description;
+                }
 
-        [ServerCallback]
-        private void OnDisable()
-        {
-            TearDown();
+                return desc;
+            }
         }
 
         [Server]
@@ -54,6 +56,11 @@ namespace WorldQuest
         [Server]
         public void TearDown()
         {
+            if (_spawnedGameObjects == null)
+            {
+                _spawnedGameObjects = new GameObject[spawnPoints.Length];
+            }
+            
             for (int i = 0; i < _spawnedGameObjects.Length; i++)
             {
                 NetworkServer.Destroy(_spawnedGameObjects[i]);
@@ -64,7 +71,7 @@ namespace WorldQuest
         private void OnValidate()
         {
             spawnPoints = GetComponentsInChildren<InstanceSpawnPoint>();
-            
+
             if (goals == null || goals.Length == 0)
             {
                 Debug.LogWarningFormat("There are no goals for Tier '{0}'", name);
@@ -81,7 +88,7 @@ namespace WorldQuest
 
             return fulfilled;
         }
-        
+
         [Server]
         public void Register(Player player)
         {

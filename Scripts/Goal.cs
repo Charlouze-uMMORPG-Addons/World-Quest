@@ -1,6 +1,4 @@
-﻿using System.Text;
-using Mirror;
-using UnityEngine;
+﻿using Mirror;
 
 namespace WorldQuest
 {
@@ -15,7 +13,7 @@ namespace WorldQuest
 
         public abstract void UnregisterPlayer(Player player);
 
-        public abstract string Tooltip();
+        public abstract string Description { get; }
 
         public virtual void Setup()
         {

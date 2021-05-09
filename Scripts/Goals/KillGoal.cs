@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine.Events;
 
 namespace WorldQuest.Goals
@@ -45,9 +44,6 @@ namespace WorldQuest.Goals
             }
         }
 
-        public override string Tooltip()
-        {
-            return $"{progress}/{killNeeded} {targetName} killed";
-        }
+        public override string Description => $"{progress}/{killNeeded} {targetName} killed";
     }
 }
