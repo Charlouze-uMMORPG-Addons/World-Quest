@@ -12,7 +12,8 @@ namespace WorldQuest
 
         public Goal[] goals;
 
-        private GameObject[] _spawnedGameObjects;
+        [HideInInspector]
+        public GameObject[] spawnedGameObjects;
 
         public string Description
         {
@@ -36,9 +37,9 @@ namespace WorldQuest
                 goal.Setup();
             }
 
-            if (_spawnedGameObjects == null)
+            if (spawnedGameObjects == null || spawnedGameObjects.Length != spawnPoints.Length)
             {
-                _spawnedGameObjects = new GameObject[spawnPoints.Length];
+                spawnedGameObjects = new GameObject[spawnPoints.Length];
             }
 
             for (int i = 0; i < spawnPoints.Length; i++)
@@ -47,7 +48,7 @@ namespace WorldQuest
                 var spawnPointTransform = spawnPoint.transform;
                 GameObject spawned = Instantiate(spawnPoint.prefab.gameObject, spawnPointTransform.position,
                     spawnPointTransform.rotation);
-                _spawnedGameObjects[i] = spawned;
+                spawnedGameObjects[i] = spawned;
                 spawned.name = spawnPoint.prefab.name;
                 NetworkServer.Spawn(spawned);
             }
@@ -56,15 +57,10 @@ namespace WorldQuest
         [Server]
         public void TearDown()
         {
-            if (_spawnedGameObjects == null)
+            for (int i = 0; i < spawnedGameObjects.Length; i++)
             {
-                _spawnedGameObjects = new GameObject[spawnPoints.Length];
-            }
-            
-            for (int i = 0; i < _spawnedGameObjects.Length; i++)
-            {
-                NetworkServer.Destroy(_spawnedGameObjects[i]);
-                _spawnedGameObjects[i] = null;
+                NetworkServer.Destroy(spawnedGameObjects[i]);
+                spawnedGameObjects[i] = null;
             }
         }
 

@@ -11,7 +11,7 @@ namespace WorldQuest
 
         public UnityEventPlayer onPlayerLeave = new UnityEventPlayer();
 
-        private readonly HashSet<Player> players = new HashSet<Player>();
+        public readonly HashSet<Player> players = new HashSet<Player>();
 
         public void Register(Tier tier, Player player)
         {

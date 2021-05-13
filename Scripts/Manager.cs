@@ -17,6 +17,10 @@ namespace WorldQuest
 
         public Tier[] tiers;
 
+        public UnityEvent onStart;
+
+        public UnityEvent onEnd;
+
         public UnityEventTier onTierSetup;
 
         public UnityEventTier onTierTearDown;
@@ -45,8 +49,6 @@ namespace WorldQuest
                     TearDown(tier);
                 }
             }
-            
-            
         }
 
         [ServerCallback]
@@ -54,6 +56,11 @@ namespace WorldQuest
         {
             if (CurrentTier.IsFulfilled())
             {
+                if (_currentTierIndex == tiers.Length - 1)
+                {
+                    onEnd.Invoke();
+                }
+
                 Debug.LogFormat("Tier '{0}' is fulfilled.", CurrentTier.name);
                 TearDown(CurrentTier);
                 NextTier();
@@ -61,6 +68,11 @@ namespace WorldQuest
 
             if (!CurrentTier.gameObject.activeSelf)
             {
+                if (_currentTierIndex == 0)
+                {
+                    onStart.Invoke();
+                }
+
                 Debug.LogFormat("Prepare tier '{0}'", CurrentTier.name);
                 Setup(CurrentTier);
             }
@@ -71,7 +83,7 @@ namespace WorldQuest
         {
             if (player == Player.localPlayer)
             {
-                player.GetComponent<PlayerWorldQuests>().managers.Add(this);
+                player.GetComponent<PlayerWorldQuests>().Register(this);
             }
         }
 
@@ -80,7 +92,7 @@ namespace WorldQuest
         {
             if (player == Player.localPlayer)
             {
-                player.GetComponent<PlayerWorldQuests>().managers.Remove(this);
+                player.GetComponent<PlayerWorldQuests>().Unregister(this);
             }
         }
 
