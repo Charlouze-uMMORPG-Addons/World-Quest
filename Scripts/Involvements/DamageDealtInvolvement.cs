@@ -5,8 +5,6 @@ namespace WorldQuest.Involvements
 {
     public class DamageDealtInvolvement : Involvement
     {
-        public float rate = 1f;
-
         private Dictionary<int, UnityAction<Entity, int>> onRecvDamagelisteners =
             new Dictionary<int, UnityAction<Entity, int>>();
 
@@ -18,7 +16,7 @@ namespace WorldQuest.Involvements
                 {
                     if (scores.ContainsKey(entity.name))
                     {
-                        scores[entity.name] += damage * this.rate;
+                        Add(entity,damage * rate);
                     }
                 };
                 tier.spawnedGameObjects[i].GetComponent<Combat>().onServerReceivedDamage

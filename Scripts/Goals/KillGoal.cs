@@ -3,7 +3,7 @@ using UnityEngine.Events;
 
 namespace WorldQuest.Goals
 {
-    public class KillGoal : Goal
+    public class KillGoal : ProgressGoal
     {
         public string targetName;
         public Monster killTarget;
@@ -11,11 +11,6 @@ namespace WorldQuest.Goals
 
         private Dictionary<string, UnityAction<Entity>> onKilledListeners =
             new Dictionary<string, UnityAction<Entity>>();
-
-        public override bool IsFulfilled()
-        {
-            return progress >= killNeeded;
-        }
 
         public override void RegisterPlayer(Player player)
         {
@@ -43,6 +38,8 @@ namespace WorldQuest.Goals
                 onKilledListeners.Remove(player.name);
             }
         }
+
+        protected override int EndProgress => killNeeded;
 
         public override string Description => $"{progress}/{killNeeded} {targetName} killed";
     }

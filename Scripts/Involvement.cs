@@ -7,6 +7,8 @@ namespace WorldQuest
     [RequireComponent(typeof(Players))]
     public abstract class Involvement : NetworkBehaviour
     {
+        public float rate = 1f;
+
         public readonly Dictionary<string, float> scores = new Dictionary<string, float>();
 
         private Players _players;
@@ -41,6 +43,14 @@ namespace WorldQuest
         public virtual void OnPlayerEnter(Player player)
         {
             scores[player.name] = 0;
+        }
+
+        [Server]
+        protected void Add(Entity entity, float score)
+        {
+            var totalScore = scores[entity.name] + score * rate;
+            Debug.LogFormat("{0} scored {1} for a total of {2}", entity.name, score, totalScore);
+            scores[entity.name] = totalScore;
         }
     }
 }
