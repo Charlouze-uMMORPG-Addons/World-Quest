@@ -14,6 +14,7 @@ namespace WorldQuest
 
         private SyncDictionary<string, float> involvements = new SyncDictionary<string, float>();
         private SyncDictionary<string, int> ranking = new SyncDictionary<string, int>();
+        private SyncHashSet<string> taken = new SyncHashSet<string>();
 
         private Involvement[] _involvements;
 
@@ -37,6 +38,7 @@ namespace WorldQuest
         {
             involvements.Clear();
             ranking.Clear();
+            taken.Clear();
             rewarder.Hide();
         }
 
@@ -88,6 +90,18 @@ namespace WorldQuest
             }
 
             return ranking.Count + 1;
+        }
+
+        public bool CanTake(Player player)
+        {
+            return !taken.Contains(player.name);
+        }
+
+        public void Take(Player player)
+        {
+            player.gold += gold;
+            player.experience.current += experience;
+            taken.Add(player.name);
         }
     }
 }

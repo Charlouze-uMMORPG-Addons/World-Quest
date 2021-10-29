@@ -11,7 +11,7 @@ namespace WorldQuest
         [HideInInspector]
         public Rewards rewards;
 
-        public override bool HasOffer(Player player) => true;
+        public override bool HasOffer(Player player) => rewards.CanTake(player);
 
         public override string GetOfferName() => "Rewards";
 
@@ -21,12 +21,21 @@ namespace WorldQuest
             UINpcDialogue.singleton.panel.SetActive(false);
         }
 
-        private void Start()
+        private void Update()
         {
             // setup overlay only if needed
             if (isServerOnly) return;
 
-            questOverlay.text = "!";
+            var player = Player.localPlayer;
+
+            if (player != null && rewards.CanTake(player))
+            {
+                questOverlay.text = "!";
+            }
+            else
+            {
+                questOverlay.text = "";
+            }
         }
     }
 }
