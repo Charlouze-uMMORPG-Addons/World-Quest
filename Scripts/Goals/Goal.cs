@@ -11,6 +11,11 @@ namespace WorldQuest
             // NoOp
         }
 
+        public virtual void TearDown()
+        {
+            // NoOp
+        }
+
         public virtual void RegisterPlayer(Player player)
         {
             // NoOp

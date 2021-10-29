@@ -57,6 +57,11 @@ namespace WorldQuest
         [Server]
         public void TearDown()
         {
+            foreach (var goal in goals)
+            {
+                goal.TearDown();
+            }
+            
             for (int i = 0; i < spawnedGameObjects.Length; i++)
             {
                 NetworkServer.Destroy(spawnedGameObjects[i]);

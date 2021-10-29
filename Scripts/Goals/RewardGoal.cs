@@ -7,7 +7,13 @@
         public override void Setup()
         {
             base.Setup();
-            rewards.Prepare();
+            rewards.Setup();
+        }
+
+        public override void TearDown()
+        {
+            base.TearDown();
+            rewards.TearDown();
         }
     }
 }

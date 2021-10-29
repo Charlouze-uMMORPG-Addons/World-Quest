@@ -24,16 +24,24 @@ namespace WorldQuest
         }
 
         [Server]
-        public void Prepare()
+        public void Setup()
         {
             ComputeInvolments();
             ComputeRanking();
             rewarder.GetComponent<NpcRewards>().rewards = this;
+            rewarder.Show();
+        }
+
+        [Server]
+        public void TearDown()
+        {
+            involvements.Clear();
+            ranking.Clear();
+            rewarder.Hide();
         }
 
         private void ComputeInvolments()
         {
-            involvements.Clear();
             foreach (var involvement in _involvements)
             {
                 foreach (var nameScorePair in involvement.scores)
@@ -50,7 +58,6 @@ namespace WorldQuest
 
         private void ComputeRanking()
         {
-            ranking.Clear();
             var involvementList = new List<KeyValuePair<string, float>>();
             foreach (var involvement in involvements)
             {
