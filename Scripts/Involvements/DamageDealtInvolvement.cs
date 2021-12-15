@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Mirror;
 using UnityEngine.Events;
 
 namespace WorldQuest.Involvements
@@ -8,6 +9,7 @@ namespace WorldQuest.Involvements
         private Dictionary<int, UnityAction<Entity, int>> onRecvDamagelisteners =
             new Dictionary<int, UnityAction<Entity, int>>();
 
+        [Server]
         public void OnTierSetup(Tier tier)
         {
             for (int i = 0; i < tier.spawnedGameObjects.Length; i++)
@@ -24,6 +26,7 @@ namespace WorldQuest.Involvements
             }
         }
 
+        [Server]
         public void OnTierTearDown(Tier tier)
         {
             for (int i = 0; i < tier.spawnedGameObjects.Length; i++)

@@ -78,22 +78,16 @@ namespace WorldQuest
             }
         }
 
-        [ClientCallback]
+        [Server]
         public void Register(Player player)
         {
-            if (player == Player.localPlayer)
-            {
-                player.GetComponent<PlayerWorldQuests>().Register(this);
-            }
+            player.GetComponent<PlayerWorldQuests>().Register(this);
         }
 
-        [ClientCallback]
+        [Server]
         public void Unregister(Player player)
         {
-            if (player == Player.localPlayer)
-            {
-                player.GetComponent<PlayerWorldQuests>().Unregister(this);
-            }
+            player.GetComponent<PlayerWorldQuests>().Unregister(this);
         }
 
         private void Setup(Tier tier)

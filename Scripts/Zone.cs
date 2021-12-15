@@ -11,12 +11,26 @@ namespace WorldQuest
         private Manager _manager;
         private Players _players;
 
-        private void Awake()
+        private void Start()
         {
             _manager = GetComponent<Manager>();
             _players = GetComponent<Players>();
         }
 
+        [ClientCallback]
+        private void Update()
+        {
+            if (isServer) return;
+
+            Destroy(this);
+
+            foreach (var collider in GetComponents<Collider>())
+            {
+                Destroy(collider);
+            }
+        }
+
+        [Server]
         private void OnTriggerEnter(Collider other)
         {
             var player = other.GetComponentInParent<Player>();
@@ -30,6 +44,7 @@ namespace WorldQuest
             }
         }
 
+        [Server]
         private void OnTriggerExit(Collider other)
         {
             var player = other.GetComponentInParent<Player>();

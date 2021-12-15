@@ -97,11 +97,15 @@ namespace WorldQuest
             return !taken.Contains(player.name);
         }
 
+        [Server]
         public void Take(Player player)
         {
-            player.gold += gold;
-            player.experience.current += experience;
-            taken.Add(player.name);
+            if (CanTake(player))
+            {
+                player.gold += gold;
+                player.experience.current += experience;
+                taken.Add(player.name);
+            }
         }
     }
 }

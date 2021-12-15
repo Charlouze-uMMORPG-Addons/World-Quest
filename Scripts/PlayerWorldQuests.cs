@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using Mirror;
+﻿using Mirror;
 using UnityEngine;
 
 namespace WorldQuest
@@ -8,7 +7,7 @@ namespace WorldQuest
     [RequireComponent(typeof(PlayerInventory))]
     public class PlayerWorldQuests : NetworkBehaviour
     {
-        public List<Manager> managers = new List<Manager>();
+        public SyncList<Manager> managers = new SyncList<Manager>();
 
         public bool participating => managers.Count > 0;
 
@@ -19,11 +18,13 @@ namespace WorldQuest
             _player = GetComponent<Player>();
         }
 
+        [Server]
         public void Register(Manager manager)
         {
             managers.Add(manager);
         }
 
+        [Server]
         public void Unregister(Manager manager)
         {
             managers.Remove(manager);
