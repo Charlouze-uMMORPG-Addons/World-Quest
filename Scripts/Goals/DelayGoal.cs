@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using System;
+using Mirror;
+using UnityEngine;
 
 namespace WorldQuest.Goals
 {
@@ -8,6 +10,9 @@ namespace WorldQuest.Goals
 
         private float _setupTime;
 
+        [SyncVar]
+        private int _remainingTime;
+        
         public override void Setup()
         {
             base.Setup();
@@ -19,6 +24,16 @@ namespace WorldQuest.Goals
             return Time.time - _setupTime > delay;
         }
 
-        public override string Description => $"{Mathf.FloorToInt(delay + _setupTime - Time.time)} seconds left";
+        [ServerCallback]
+        private void Update()
+        {
+            var remainingTime = Mathf.FloorToInt(delay + _setupTime - Time.time);
+            if (_remainingTime != remainingTime)
+            {
+                _remainingTime = remainingTime;
+            }
+        }
+
+        public override string Description => $"{_remainingTime} seconds left";
     }
 }
