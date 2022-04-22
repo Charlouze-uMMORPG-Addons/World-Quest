@@ -25,6 +25,7 @@ namespace WorldQuest
 
         public UnityEventTier onTierTearDown;
 
+        [SyncVar]
         private int _currentTierIndex;
 
         public Tier CurrentTier
@@ -34,8 +35,7 @@ namespace WorldQuest
 
         public string Description => _description + "\n\n" + CurrentTier.Description;
 
-        [ServerCallback]
-        private void Start()
+        public override void OnStartServer()
         {
             if (tiers.Length == 0)
             {
@@ -48,6 +48,7 @@ namespace WorldQuest
                 {
                     TearDown(tier);
                 }
+                Restart();
             }
         }
 
@@ -66,7 +67,7 @@ namespace WorldQuest
                 NextTier();
             }
 
-            if (!CurrentTier.gameObject.activeSelf)
+            if (!CurrentTier.active)
             {
                 if (_currentTierIndex == 0)
                 {
@@ -92,7 +93,6 @@ namespace WorldQuest
 
         private void Setup(Tier tier)
         {
-            tier.gameObject.SetActive(true);
             tier.Setup();
             onTierSetup.Invoke(tier);
         }
@@ -101,7 +101,6 @@ namespace WorldQuest
         {
             onTierTearDown.Invoke(tier);
             tier.TearDown();
-            tier.gameObject.SetActive(false);
         }
 
         private void NextTier()

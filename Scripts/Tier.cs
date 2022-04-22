@@ -15,6 +15,9 @@ namespace WorldQuest
         [HideInInspector]
         public GameObject[] spawnedGameObjects;
 
+        [HideInInspector]
+        public bool active;
+
         public string Description
         {
             get
@@ -52,11 +55,15 @@ namespace WorldQuest
                 spawned.name = spawnPoint.prefab.name;
                 NetworkServer.Spawn(spawned);
             }
+
+            active = true;
         }
 
         [Server]
         public void TearDown()
         {
+            active = false;
+
             foreach (var goal in goals)
             {
                 goal.TearDown();
