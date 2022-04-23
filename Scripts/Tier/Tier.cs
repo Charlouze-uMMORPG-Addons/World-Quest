@@ -1,5 +1,6 @@
 ﻿using Mirror;
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace WorldQuest
 {
@@ -8,12 +9,11 @@ namespace WorldQuest
         [SerializeField]
         private string _description;
 
-        public InstanceSpawnPoint[] spawnPoints;
+        public UnityEvent onSetup;
+        
+        public UnityEvent onTearDown;
 
         public Goal[] goals;
-
-        [HideInInspector]
-        public GameObject[] spawnedGameObjects;
 
         [HideInInspector]
         public bool active;
@@ -41,22 +41,8 @@ namespace WorldQuest
             {
                 goal.Setup();
             }
-
-            if (spawnedGameObjects == null || spawnedGameObjects.Length != spawnPoints.Length)
-            {
-                spawnedGameObjects = new GameObject[spawnPoints.Length];
-            }
-
-            for (int i = 0; i < spawnPoints.Length; i++)
-            {
-                var spawnPoint = spawnPoints[i];
-                var spawnPointTransform = spawnPoint.transform;
-                GameObject spawned = Instantiate(spawnPoint.prefab.gameObject, spawnPointTransform.position,
-                    spawnPointTransform.rotation);
-                spawnedGameObjects[i] = spawned;
-                spawned.name = spawnPoint.prefab.name;
-                NetworkServer.Spawn(spawned);
-            }
+            
+            onSetup.Invoke();
 
             active = true;
         }
@@ -65,29 +51,15 @@ namespace WorldQuest
         public void TearDown()
         {
             active = false;
+            
+            onTearDown.Invoke();
 
             foreach (var goal in goals)
             {
                 goal.TearDown();
             }
-            
-            for (int i = 0; i < spawnedGameObjects.Length; i++)
-            {
-                NetworkServer.Destroy(spawnedGameObjects[i]);
-                spawnedGameObjects[i] = null;
-            }
-            
+
             Debug.LogFormat("Tearing down tier '{0}'", name);
-        }
-
-        private void OnValidate()
-        {
-            spawnPoints = GetComponentsInChildren<InstanceSpawnPoint>();
-
-            if (goals == null || goals.Length == 0)
-            {
-                Debug.LogWarningFormat("There are no goals for Tier '{0}'", name);
-            }
         }
 
         public bool IsFulfilled()
