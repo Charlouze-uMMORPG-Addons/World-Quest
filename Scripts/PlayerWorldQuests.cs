@@ -1,5 +1,6 @@
 ﻿using Mirror;
 using UnityEngine;
+using WorldQuest.Goals;
 
 namespace WorldQuest
 {
@@ -31,17 +32,17 @@ namespace WorldQuest
         }
 
         [Command]
-        public void CmdTakeRewards(Rewards rewards)
+        public void CmdTakeRewards(RewardGoal rewardGoal)
         {
-            if (rewards != null &&
-                rewards.CanTake(_player) &&
+            if (rewardGoal != null &&
+                rewardGoal.CanTake(_player) &&
                 _player.state == "IDLE" &&
                 _player.target != null &&
                 _player.target.health.current > 0 &&
                 _player.target is Npc npc &&
                 Utils.ClosestDistance(_player, npc) <= _player.interactionRange)
             {
-                rewards.Take(_player);
+                rewardGoal.Take(_player);
             }
         }
     }

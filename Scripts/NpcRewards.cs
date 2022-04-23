@@ -1,5 +1,6 @@
 ﻿using TMPro;
 using UnityEngine;
+using WorldQuest.Goals;
 
 namespace WorldQuest
 {
@@ -9,15 +10,15 @@ namespace WorldQuest
         public TextMeshPro questOverlay;
 
         [HideInInspector]
-        public Rewards rewards;
+        public RewardGoal rewardGoal;
 
-        public override bool HasOffer(Player player) => rewards.CanTake(player);
+        public override bool HasOffer(Player player) => rewardGoal.CanTake(player);
 
         public override string GetOfferName() => "Rewards";
 
         public override void OnSelect(Player player)
         {
-            UINpcRewards.singleton.Activate(rewards);
+            UINpcRewards.singleton.Activate(rewardGoal);
             UINpcDialogue.singleton.panel.SetActive(false);
         }
 
@@ -28,7 +29,7 @@ namespace WorldQuest
 
             var player = Player.localPlayer;
 
-            if (player != null && rewards.CanTake(player))
+            if (player != null && rewardGoal.CanTake(player))
             {
                 questOverlay.text = "!";
             }

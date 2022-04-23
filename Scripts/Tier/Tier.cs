@@ -13,17 +13,17 @@ namespace WorldQuest
         
         public UnityEvent onTearDown;
 
-        public Goal[] goals;
-
         [HideInInspector]
         public bool active;
+
+        private Goal[] _goals;
 
         public string Description
         {
             get
             {
                 var desc = _description + "\n";
-                foreach (var goal in goals)
+                foreach (var goal in _goals)
                 {
                     desc = desc + "\n" + goal.Description;
                 }
@@ -32,12 +32,18 @@ namespace WorldQuest
             }
         }
 
+        public override void OnStartServer()
+        {
+            base.OnStartServer();
+            _goals = GetComponents<Goal>();
+        }
+
         [Server]
         public void Setup()
         {
             Debug.LogFormat("Setting up tier '{0}'", name);
             
-            foreach (var goal in goals)
+            foreach (var goal in _goals)
             {
                 goal.Setup();
             }
@@ -54,7 +60,7 @@ namespace WorldQuest
             
             onTearDown.Invoke();
 
-            foreach (var goal in goals)
+            foreach (var goal in _goals)
             {
                 goal.TearDown();
             }
@@ -65,7 +71,7 @@ namespace WorldQuest
         public bool IsFulfilled()
         {
             var fulfilled = true;
-            foreach (var goal in goals)
+            foreach (var goal in _goals)
             {
                 fulfilled &= goal.IsFulfilled();
             }
@@ -76,7 +82,7 @@ namespace WorldQuest
         [Server]
         public void Register(Player player)
         {
-            foreach (var goal in goals)
+            foreach (var goal in _goals)
             {
                 goal.RegisterPlayer(player);
             }
@@ -85,7 +91,7 @@ namespace WorldQuest
         [Server]
         public void Unregister(Player player)
         {
-            foreach (var goal in goals)
+            foreach (var goal in _goals)
             {
                 goal.UnregisterPlayer(player);
             }

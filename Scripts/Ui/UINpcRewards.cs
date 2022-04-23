@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 using WorldQuest;
+using WorldQuest.Goals;
 
 public partial class UINpcRewards : MonoBehaviour
 {
@@ -10,7 +11,7 @@ public partial class UINpcRewards : MonoBehaviour
     public Button rewardButton;
 
     [HideInInspector]
-    public Rewards rewards;
+    private RewardGoal _rewardGoal;
 
     public UINpcRewards()
     {
@@ -23,16 +24,16 @@ public partial class UINpcRewards : MonoBehaviour
     {
         var player = Player.localPlayer;
 
-        if (rewards != null
+        if (_rewardGoal != null
             && player != null
             && player.target != null
-            && player.target == rewards.rewarder
+            && player.target == _rewardGoal.rewarderNpc
             && Utils.ClosestDistance(player, player.target) <= player.interactionRange)
         {
-            text.text = rewards.Text(player);
+            text.text = _rewardGoal.Text(player);
             rewardButton.onClick.SetListener(() =>
             {
-                player.GetComponent<PlayerWorldQuests>().CmdTakeRewards(rewards);
+                player.GetComponent<PlayerWorldQuests>().CmdTakeRewards(_rewardGoal);
                 Deactivate();
             });
         }
@@ -45,12 +46,12 @@ public partial class UINpcRewards : MonoBehaviour
     private void Deactivate()
     {
         panel.SetActive(false);
-        rewards = null;
+        _rewardGoal = null;
     }
 
-    public void Activate(Rewards rewards)
+    public void Activate(RewardGoal rewards)
     {
-        this.rewards = rewards;
+        this._rewardGoal = rewards;
         panel.SetActive(true);
     }
 }
