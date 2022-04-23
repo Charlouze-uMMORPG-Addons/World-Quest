@@ -4,6 +4,7 @@ using UnityEngine;
 
 namespace WorldQuest
 {
+    [RequireComponent(typeof(TierManager))]
     [RequireComponent(typeof(Players))]
     public abstract class Involvement : NetworkBehaviour
     {
@@ -11,16 +12,19 @@ namespace WorldQuest
 
         public readonly Dictionary<string, float> scores = new Dictionary<string, float>();
 
-        private Players _players;
-
-        [ServerCallback]
-        private void Start()
+        protected Players _players;
+        protected TierManager _tierManager;
+        
+        public override void OnStartServer()
         {
             _players = GetComponent<Players>();
+            _players.onPlayerEnter.AddListener(OnPlayerEnter);
+            _tierManager = GetComponent<TierManager>();
+            _tierManager.onStart.AddListener(OnStart);
         }
 
         [Server]
-        public virtual void OnRestart()
+        public virtual void OnStart()
         {
             if (Debug.isDebugBuild)
             {
@@ -33,10 +37,7 @@ namespace WorldQuest
 
             scores.Clear();
 
-            foreach (var player in _players.players)
-            {
-                OnPlayerEnter(player);
-            }
+            _players.ForEach(OnPlayerEnter);
         }
 
         [Server]

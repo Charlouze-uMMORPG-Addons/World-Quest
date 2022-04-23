@@ -7,7 +7,7 @@ namespace WorldQuest
     [RequireComponent(typeof(PlayerInventory))]
     public class PlayerWorldQuests : NetworkBehaviour
     {
-        public SyncList<Manager> managers = new SyncList<Manager>();
+        public SyncList<DescriptionManager> managers = new SyncList<DescriptionManager>();
 
         public bool participating => managers.Count > 0;
 
@@ -19,15 +19,15 @@ namespace WorldQuest
         }
 
         [Server]
-        public void Register(Manager manager)
+        public void Add(GameObject worldQuestGo)
         {
-            managers.Add(manager);
+            managers.Add(worldQuestGo.GetComponent<DescriptionManager>());
         }
 
         [Server]
-        public void Unregister(Manager manager)
+        public void Remove(GameObject worldQuestGo)
         {
-            managers.Remove(manager);
+            managers.Remove(worldQuestGo.GetComponent<DescriptionManager>());
         }
 
         [Command]

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Mirror;
+using UnityEngine;
 using UnityEngine.Events;
 
 namespace WorldQuest.Involvements
@@ -8,6 +9,13 @@ namespace WorldQuest.Involvements
     {
         private Dictionary<int, UnityAction<Entity, int>> onRecvDamagelisteners =
             new Dictionary<int, UnityAction<Entity, int>>();
+
+        public override void OnStartServer()
+        {
+            base.OnStartServer();
+            _tierManager.onTierSetup.AddListener(OnTierSetup);
+            _tierManager.onTierTearDown.AddListener(OnTierTearDown);
+        }
 
         [Server]
         public void OnTierSetup(Tier tier)

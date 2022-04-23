@@ -8,13 +8,10 @@ namespace WorldQuest
     [Serializable] public class UnityEventTier : UnityEvent<Tier>
     {
     }
-
-    [RequireComponent(typeof(NetworkIdentity))]
-    public class Manager : NetworkBehaviour
+    
+    [RequireComponent(typeof(Players))]
+    public class TierManager : NetworkBehaviour
     {
-        [SerializeField]
-        public string _description;
-
         public Tier[] tiers;
 
         public UnityEvent onStart;
@@ -25,6 +22,8 @@ namespace WorldQuest
 
         public UnityEventTier onTierTearDown;
 
+        private Players _players;
+
         [SyncVar]
         private int _currentTierIndex;
 
@@ -32,8 +31,6 @@ namespace WorldQuest
         {
             get => tiers[_currentTierIndex];
         }
-
-        public string Description => _description + "\n\n" + CurrentTier.Description;
 
         public override void OnStartServer()
         {
@@ -44,10 +41,15 @@ namespace WorldQuest
             }
             else
             {
+                _players = GetComponent<Players>();
+                _players.onPlayerEnter.AddListener(player => CurrentTier.Register(player));
+                _players.onPlayerLeave.AddListener(player => CurrentTier.Unregister(player));
+
                 foreach (var tier in tiers)
                 {
                     TearDown(tier);
                 }
+
                 Restart();
             }
         }
@@ -74,32 +76,21 @@ namespace WorldQuest
                     onStart.Invoke();
                 }
 
-                Debug.LogFormat("Prepare tier '{0}'", CurrentTier.name);
                 Setup(CurrentTier);
             }
-        }
-
-        [Server]
-        public void Register(Player player)
-        {
-            player.GetComponent<PlayerWorldQuests>().Register(this);
-        }
-
-        [Server]
-        public void Unregister(Player player)
-        {
-            player.GetComponent<PlayerWorldQuests>().Unregister(this);
         }
 
         private void Setup(Tier tier)
         {
             tier.Setup();
+            _players.ForEach(player => tier.Register(player));
             onTierSetup.Invoke(tier);
         }
 
         private void TearDown(Tier tier)
         {
             onTierTearDown.Invoke(tier);
+            _players.ForEach(player => tier.Unregister(player));
             tier.TearDown();
         }
 

@@ -35,6 +35,8 @@ namespace WorldQuest
         [Server]
         public void Setup()
         {
+            Debug.LogFormat("Setting up tier '{0}'", name);
+            
             foreach (var goal in goals)
             {
                 goal.Setup();
@@ -74,6 +76,8 @@ namespace WorldQuest
                 NetworkServer.Destroy(spawnedGameObjects[i]);
                 spawnedGameObjects[i] = null;
             }
+            
+            Debug.LogFormat("Tearing down tier '{0}'", name);
         }
 
         private void OnValidate()

@@ -3,17 +3,14 @@ using UnityEngine;
 
 namespace WorldQuest
 {
-    [RequireComponent(typeof(Manager))]
     [RequireComponent(typeof(Players))]
     [RequireComponent(typeof(BoxCollider))]
     public class Zone : NetworkBehaviour
     {
-        private Manager _manager;
         private Players _players;
 
         private void Start()
         {
-            _manager = GetComponent<Manager>();
             _players = GetComponent<Players>();
         }
 
@@ -36,7 +33,7 @@ namespace WorldQuest
             var player = other.GetComponentInParent<Player>();
             if (player != null)
             {
-                _players.Register(_manager.CurrentTier, player);
+                _players.Register(player);
             }
             else
             {
@@ -50,7 +47,7 @@ namespace WorldQuest
             var player = other.GetComponentInParent<Player>();
             if (player != null)
             {
-                _players.Unregister(_manager.CurrentTier, player);
+                _players.Unregister(player);
             }
             else
             {
