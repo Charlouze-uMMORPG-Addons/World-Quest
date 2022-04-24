@@ -11,7 +11,14 @@ namespace WorldQuest
 
         public UnityEventPlayer onPlayerLeave = new UnityEventPlayer();
 
-        public readonly HashSet<Player> players = new HashSet<Player>();
+        private readonly HashSet<Player> players = new HashSet<Player>();
+
+        public override void OnStartServer()
+        {
+            base.OnStartServer();
+            ((NetworkManagerMMO)NetworkManagerMMO.singleton)
+                .onServerDisconnect.AddListener(conn => Unregister(conn.identity.GetComponent<Player>()));
+        }
 
         [Server]
         public void Register(Player player)
