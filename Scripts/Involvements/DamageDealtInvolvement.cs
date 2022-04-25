@@ -1,56 +1,60 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Mirror;
+using UnityEngine;
 using UnityEngine.Events;
 
 namespace WorldQuest.Involvements
 {
     public class DamageDealtInvolvement : Involvement
     {
-        private Dictionary<int, UnityAction<Entity, int>> onRecvDamagelisteners =
-            new Dictionary<int, UnityAction<Entity, int>>();
+        public Spawner[] spawners;
+        
+        private Dictionary<uint, UnityAction<Entity, int>> onRecvDamagelisteners =
+            new Dictionary<uint, UnityAction<Entity, int>>();
+
+        private void Reset()
+        {
+            // populating with spawners on children
+            spawners = GetComponentsInChildren<Spawner>();
+        }
 
         public override void OnStartServer()
         {
             base.OnStartServer();
-            _tierManager.onTierSetup.AddListener(OnTierSetup);
-            _tierManager.onTierTearDown.AddListener(OnTierTearDown);
+            foreach (var spawner in spawners)
+            {
+                spawner.onSpawn.AddListener(OnSpawnGameObject);
+                spawner.onDestroy.AddListener(OnDestroyGameObject);
+            }
         }
 
         [Server]
-        public void OnTierSetup(Tier tier)
+        private void OnSpawnGameObject(GameObject gameObject)
         {
-            var spawner = tier.GetComponent<Spawner>();
-            
-            if (spawner == null) return;
-            
-            for (int i = 0; i < spawner.spawnedGameObjects.Length; i++)
+            var combat = gameObject.GetComponent<Combat>();
+            if (combat != null)
             {
-                onRecvDamagelisteners[i] = (entity, damage) =>
+                onRecvDamagelisteners[combat.netId] = (entity, damage) =>
                 {
                     if (scores.ContainsKey(entity.name))
                     {
                         Add(entity, damage * rate);
                     }
                 };
-                spawner.spawnedGameObjects[i].GetComponent<Combat>().onServerReceivedDamage
-                    .AddListener(onRecvDamagelisteners[i]);
+                combat.onServerReceivedDamage.AddListener(onRecvDamagelisteners[combat.netId]);
             }
         }
 
         [Server]
-        public void OnTierTearDown(Tier tier)
+        private void OnDestroyGameObject(GameObject gameObject)
         {
-            var spawner = tier.GetComponent<Spawner>();
-            
-            if (spawner == null) return;
-
-            for (int i = 0; i < spawner.spawnedGameObjects.Length; i++)
+            var combat = gameObject.GetComponent<Combat>();
+            if (combat != null)
             {
-                spawner.spawnedGameObjects[i].GetComponent<Combat>().onServerReceivedDamage
-                    .RemoveListener(onRecvDamagelisteners[i]);
+                combat.onServerReceivedDamage.RemoveListener(onRecvDamagelisteners[combat.netId]);
+                onRecvDamagelisteners.Remove(combat.netId);
             }
-
-            onRecvDamagelisteners.Clear();
         }
     }
 }

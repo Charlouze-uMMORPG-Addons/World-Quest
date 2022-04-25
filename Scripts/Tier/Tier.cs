@@ -1,4 +1,5 @@
-﻿using Mirror;
+﻿using System;
+using Mirror;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -9,6 +10,8 @@ namespace WorldQuest
         [SerializeField]
         private string _description;
 
+        public Goal[] goals;
+
         public UnityEvent onSetup;
         
         public UnityEvent onTearDown;
@@ -16,14 +19,18 @@ namespace WorldQuest
         [HideInInspector]
         public bool active;
 
-        private Goal[] _goals;
+        private void Reset()
+        {
+            // Populating with goals that are on this GO
+            goals = GetComponents<Goal>();
+        }
 
         public string Description
         {
             get
             {
                 var desc = _description + "\n";
-                foreach (var goal in _goals)
+                foreach (var goal in goals)
                 {
                     desc = desc + "\n" + goal.Description;
                 }
@@ -32,10 +39,9 @@ namespace WorldQuest
             }
         }
 
-        public override void OnStartServer()
+        private void Awake()
         {
-            base.OnStartServer();
-            _goals = GetComponents<Goal>();
+            goals = GetComponents<Goal>();
         }
 
         [Server]
@@ -43,7 +49,7 @@ namespace WorldQuest
         {
             Debug.LogFormat("Setting up tier '{0}'", name);
             
-            foreach (var goal in _goals)
+            foreach (var goal in goals)
             {
                 goal.Setup();
             }
@@ -60,7 +66,7 @@ namespace WorldQuest
             
             onTearDown.Invoke();
 
-            foreach (var goal in _goals)
+            foreach (var goal in goals)
             {
                 goal.TearDown();
             }
@@ -71,30 +77,12 @@ namespace WorldQuest
         public bool IsFulfilled()
         {
             var fulfilled = true;
-            foreach (var goal in _goals)
+            foreach (var goal in goals)
             {
                 fulfilled &= goal.IsFulfilled();
             }
 
             return fulfilled;
-        }
-
-        [Server]
-        public void Register(Player player)
-        {
-            foreach (var goal in _goals)
-            {
-                goal.RegisterPlayer(player);
-            }
-        }
-
-        [Server]
-        public void Unregister(Player player)
-        {
-            foreach (var goal in _goals)
-            {
-                goal.UnregisterPlayer(player);
-            }
         }
     }
 }

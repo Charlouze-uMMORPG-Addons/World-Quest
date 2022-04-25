@@ -1,4 +1,5 @@
-﻿using TMPro;
+﻿using Mirror;
+using TMPro;
 using UnityEngine;
 using WorldQuest.Goals;
 
@@ -10,6 +11,7 @@ namespace WorldQuest
         public TextMeshPro questOverlay;
 
         [HideInInspector]
+        [SyncVar]
         public RewardGoal rewardGoal;
 
         public override bool HasOffer(Player player) => rewardGoal.CanTake(player);

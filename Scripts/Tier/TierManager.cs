@@ -18,18 +18,18 @@ namespace WorldQuest
 
         public UnityEvent onEnd;
 
-        public UnityEventTier onTierSetup;
-
-        public UnityEventTier onTierTearDown;
-
-        private Players _players;
-
         [SyncVar]
         private int _currentTierIndex;
 
         public Tier CurrentTier
         {
             get => tiers[_currentTierIndex];
+        }
+
+        private void Reset()
+        {
+            // populating with tiers in children
+            tiers = GetComponentsInChildren<Tier>();
         }
 
         public override void OnStartServer()
@@ -41,10 +41,6 @@ namespace WorldQuest
             }
             else
             {
-                _players = GetComponent<Players>();
-                _players.onPlayerEnter.AddListener(player => CurrentTier.Register(player));
-                _players.onPlayerLeave.AddListener(player => CurrentTier.Unregister(player));
-
                 foreach (var tier in tiers)
                 {
                     TearDown(tier);
@@ -83,14 +79,10 @@ namespace WorldQuest
         private void Setup(Tier tier)
         {
             tier.Setup();
-            _players.ForEach(player => tier.Register(player));
-            onTierSetup.Invoke(tier);
         }
 
         private void TearDown(Tier tier)
         {
-            onTierTearDown.Invoke(tier);
-            _players.ForEach(player => tier.Unregister(player));
             tier.TearDown();
         }
 

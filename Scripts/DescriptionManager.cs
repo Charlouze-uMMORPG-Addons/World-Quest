@@ -15,7 +15,7 @@ namespace WorldQuest
 
         private TierManager _tierManager;
         
-        private void Start()
+        private void Awake()
         {
             _tierManager = GetComponent<TierManager>();
         }

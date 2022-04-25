@@ -1,4 +1,5 @@
 ﻿using Mirror;
+using UnityEngine;
 
 namespace WorldQuest
 {
@@ -14,18 +15,6 @@ namespace WorldQuest
 
         [Server]
         public virtual void TearDown()
-        {
-            // NoOp
-        }
-
-        [Server]
-        public virtual void RegisterPlayer(Player player)
-        {
-            // NoOp
-        }
-
-        [Server]
-        public virtual void UnregisterPlayer(Player player)
         {
             // NoOp
         }

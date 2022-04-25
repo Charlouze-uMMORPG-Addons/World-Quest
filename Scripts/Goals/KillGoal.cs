@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine.Events;
 
 namespace WorldQuest.Goals
@@ -8,11 +9,24 @@ namespace WorldQuest.Goals
         public string targetName;
         public Monster killTarget;
         public int killNeeded;
+        public Players players;
 
         private Dictionary<string, UnityAction<Entity>> onKilledListeners =
             new Dictionary<string, UnityAction<Entity>>();
 
-        public override void RegisterPlayer(Player player)
+        public void Reset()
+        {
+            // Populating with Players on parent GO
+            players = transform.parent.GetComponent<Players>();
+        }
+
+        public override void OnStartServer()
+        {
+            players.onPlayerEnter.AddListener(RegisterPlayer);
+            players.onPlayerLeave.AddListener(UnregisterPlayer);
+        }
+
+        private void RegisterPlayer(Player player)
         {
             if (!onKilledListeners.ContainsKey(player.name))
             {
@@ -29,7 +43,7 @@ namespace WorldQuest.Goals
             }
         }
 
-        public override void UnregisterPlayer(Player player)
+        private void UnregisterPlayer(Player player)
         {
             if (onKilledListeners.ContainsKey(player.name))
             {

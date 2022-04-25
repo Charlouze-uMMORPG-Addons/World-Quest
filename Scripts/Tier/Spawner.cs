@@ -12,21 +12,30 @@ namespace WorldQuest
     [RequireComponent(typeof(Tier))]
     public class Spawner: NetworkBehaviour
     {
+        public InstanceSpawnPoint[] spawnPoints;
+        
         public UnityEventGameObject onSpawn;
         
         public UnityEventGameObject onDestroy;
         
-        [HideInInspector]
-        public GameObject[] spawnedGameObjects;
+        private GameObject[] _spawnedGameObjects;
 
-        private InstanceSpawnPoint[] _spawnPoints;
+        private void Reset()
+        {
+            // populating with child spawn point
+            spawnPoints = GetComponentsInChildren<InstanceSpawnPoint>();
+        }
+
+        private void Awake()
+        {
+            _spawnedGameObjects = new GameObject[spawnPoints.Length];
+        }
 
         public override void OnStartServer()
         {
             var tier = GetComponent<Tier>();
             tier.onSetup.AddListener(Setup);
             tier.onTearDown.AddListener(TearDown);
-            _spawnPoints = GetComponentsInChildren<InstanceSpawnPoint>();
         }
 
         [Server]
@@ -34,18 +43,18 @@ namespace WorldQuest
         {
             Debug.LogFormat("Setting up spawns for tier '{0}'", name);
 
-            if (spawnedGameObjects == null || spawnedGameObjects.Length != _spawnPoints.Length)
+            for (int i = 0; i < spawnPoints.Length; i++)
             {
-                spawnedGameObjects = new GameObject[_spawnPoints.Length];
-            }
-
-            for (int i = 0; i < _spawnPoints.Length; i++)
-            {
-                var spawnPoint = _spawnPoints[i];
+                if (_spawnedGameObjects[i] != null)
+                {
+                    continue;
+                }
+                
+                var spawnPoint = spawnPoints[i];
                 var spawnPointTransform = spawnPoint.transform;
                 GameObject spawned = Instantiate(spawnPoint.prefab.gameObject, spawnPointTransform.position,
                     spawnPointTransform.rotation);
-                spawnedGameObjects[i] = spawned;
+                _spawnedGameObjects[i] = spawned;
                 spawned.name = spawnPoint.prefab.name;
                 NetworkServer.Spawn(spawned);
                 
@@ -56,11 +65,16 @@ namespace WorldQuest
         [Server]
         public void TearDown()
         {
-            for (int i = 0; i < spawnedGameObjects.Length; i++)
+            for (int i = 0; i < _spawnedGameObjects.Length; i++)
             {
-                onDestroy.Invoke(spawnedGameObjects[i]);
-                NetworkServer.Destroy(spawnedGameObjects[i]);
-                spawnedGameObjects[i] = null;
+                if (_spawnedGameObjects == null)
+                {
+                    continue;
+                }
+                
+                onDestroy.Invoke(_spawnedGameObjects[i]);
+                NetworkServer.Destroy(_spawnedGameObjects[i]);
+                _spawnedGameObjects[i] = null;
             }
 
             Debug.LogFormat("Tearing down spawn for tier '{0}'", name);
