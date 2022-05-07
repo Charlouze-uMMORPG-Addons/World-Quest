@@ -9,20 +9,25 @@ namespace WorldQuest.Goals
     {
         public Tier rewardTier;
         public Spawner spawner;
-        
-        [SerializeField, TextArea(1, 30)] public string text;
+
+        [SerializeField] [TextArea(1, 30)] public string text;
         public long gold;
         public long experience;
+
+        public Involvement[] _involvements;
 
         [HideInInspector]
         [SyncVar]
         public Npc rewarderNpc;
 
-        private readonly SyncDictionary<string, float> involvements = new();
-        private readonly SyncDictionary<string, int> ranking = new();
-        private readonly SyncHashSet<string> taken = new();
+        private readonly SyncDictionary<string, float> playerInvolvements = new();
+        private readonly SyncDictionary<string, int> playerRanking = new();
+        private readonly SyncHashSet<string> playerRewardTaken = new();
 
-        private Involvement[] _involvements;
+        private void Reset()
+        {
+            _involvements = GetComponents<Involvement>();
+        }
 
         public override void OnStartServer()
         {
@@ -36,8 +41,11 @@ namespace WorldQuest.Goals
         private void OnSpawnRewarder(GameObject rewarder)
         {
             var npcReward = rewarder.GetComponent<NpcRewards>();
-            
-            if (npcReward == null) return;
+
+            if (npcReward == null)
+            {
+                return;
+            }
 
             npcReward.rewardManager = this;
             rewarderNpc = rewarder.GetComponent<Npc>();
@@ -53,9 +61,9 @@ namespace WorldQuest.Goals
         [Server]
         public void TearDown()
         {
-            involvements.Clear();
-            ranking.Clear();
-            taken.Clear();
+            playerInvolvements.Clear();
+            playerRanking.Clear();
+            playerRewardTaken.Clear();
         }
 
         private void ComputeInvolments()
@@ -64,12 +72,12 @@ namespace WorldQuest.Goals
             {
                 foreach (var nameScorePair in involvement.scores)
                 {
-                    if (!involvements.ContainsKey(nameScorePair.Key))
+                    if (!playerInvolvements.ContainsKey(nameScorePair.Key))
                     {
-                        involvements[nameScorePair.Key] = 0;
+                        playerInvolvements[nameScorePair.Key] = 0;
                     }
 
-                    involvements[nameScorePair.Key] += nameScorePair.Value;
+                    playerInvolvements[nameScorePair.Key] += nameScorePair.Value;
                 }
             }
         }
@@ -77,15 +85,15 @@ namespace WorldQuest.Goals
         private void ComputeRanking()
         {
             var involvementList = new List<KeyValuePair<string, float>>();
-            foreach (var involvement in involvements)
+            foreach (var involvement in playerInvolvements)
             {
                 involvementList.Add(involvement);
             }
 
             involvementList.Sort((involvement1, involvement2) => involvement2.Value.CompareTo(involvement1.Value));
-            for (var i = 0; i > involvementList.Count; i++)
+            for (var i = 0; i < involvementList.Count; i++)
             {
-                ranking[involvementList[i].Key] = i + 1;
+                playerRanking[involvementList[i].Key] = i + 1;
             }
         }
 
@@ -100,17 +108,17 @@ namespace WorldQuest.Goals
 
         private int Rank(Player player)
         {
-            if (ranking.ContainsKey(player.name))
+            if (playerRanking.ContainsKey(player.name))
             {
-                return ranking[player.name];
+                return playerRanking[player.name];
             }
 
-            return ranking.Count + 1;
+            return playerRanking.Count + 1;
         }
 
         public bool CanTake(Player player)
         {
-            return !taken.Contains(player.name);
+            return !playerRewardTaken.Contains(player.name);
         }
 
         [Server]
@@ -120,7 +128,7 @@ namespace WorldQuest.Goals
             {
                 player.gold += gold;
                 player.experience.current += experience;
-                taken.Add(player.name);
+                playerRewardTaken.Add(player.name);
             }
         }
     }
