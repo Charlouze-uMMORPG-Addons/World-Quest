@@ -8,7 +8,7 @@ namespace WorldQuest
     [Serializable] public class UnityEventTier : UnityEvent<Tier>
     {
     }
-    
+
     [RequireComponent(typeof(Players))]
     public class TierManager : NetworkBehaviour
     {
@@ -29,7 +29,7 @@ namespace WorldQuest
         private void Reset()
         {
             // populating with tiers in children
-            tiers = GetComponentsInChildren<Tier>();
+            tiers = transform.parent.GetComponentsInChildren<Tier>();
         }
 
         public override void OnStartServer()

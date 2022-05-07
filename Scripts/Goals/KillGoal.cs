@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine.Events;
 
 namespace WorldQuest.Goals
@@ -11,13 +10,20 @@ namespace WorldQuest.Goals
         public int killNeeded;
         public Players players;
 
-        private Dictionary<string, UnityAction<Entity>> onKilledListeners =
-            new Dictionary<string, UnityAction<Entity>>();
+        private readonly Dictionary<string, UnityAction<Entity>> onKilledListeners = new();
+
+        public override string Description => $"{_progress}/{killNeeded} {targetName} killed";
+
+        protected override bool IsIncrementing => true;
+
+        protected override int StartProgress => 0;
+
+        protected override int EndProgress => killNeeded;
 
         public void Reset()
         {
             // Populating with Players on parent GO
-            players = transform.parent.GetComponent<Players>();
+            players = transform.parent.GetComponentInChildren<Players>();
         }
 
         public override void OnStartServer()
@@ -33,10 +39,7 @@ namespace WorldQuest.Goals
                 var combat = player.GetComponent<Combat>();
                 var onKilledListener = new UnityAction<Entity>(victim =>
                 {
-                    if (victim.name == killTarget.name)
-                    {
-                        progress++;
-                    }
+                    if (victim.name == killTarget.name) UpdateProgress(_progress + 1);
                 });
                 onKilledListeners[player.name] = onKilledListener;
                 combat.onKilledEnemy.AddListener(onKilledListener);
@@ -52,9 +55,5 @@ namespace WorldQuest.Goals
                 onKilledListeners.Remove(player.name);
             }
         }
-
-        protected override int EndProgress => killNeeded;
-
-        public override string Description => $"{progress}/{killNeeded} {targetName} killed";
     }
 }

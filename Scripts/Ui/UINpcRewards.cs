@@ -3,15 +3,14 @@ using UnityEngine.UI;
 using WorldQuest;
 using WorldQuest.Goals;
 
-public partial class UINpcRewards : MonoBehaviour
+public class UINpcRewards : MonoBehaviour
 {
     public static UINpcRewards singleton;
     public GameObject panel;
     public Text text;
     public Button rewardButton;
 
-    [HideInInspector]
-    private RewardGoal _rewardGoal;
+    private RewardManager _rewardManager;
 
     public UINpcRewards()
     {
@@ -20,20 +19,20 @@ public partial class UINpcRewards : MonoBehaviour
         if (singleton == null) singleton = this;
     }
 
-    void Update()
+    private void Update()
     {
         var player = Player.localPlayer;
 
-        if (_rewardGoal != null
+        if (_rewardManager != null
             && player != null
             && player.target != null
-            && player.target == _rewardGoal.rewarderNpc
+            && player.target == _rewardManager.rewarderNpc
             && Utils.ClosestDistance(player, player.target) <= player.interactionRange)
         {
-            text.text = _rewardGoal.Text(player);
+            text.text = _rewardManager.Text(player);
             rewardButton.onClick.SetListener(() =>
             {
-                player.GetComponent<PlayerWorldQuests>().CmdTakeRewards(_rewardGoal);
+                player.GetComponent<PlayerWorldQuests>().CmdTakeRewards(_rewardManager);
                 Deactivate();
             });
         }
@@ -46,12 +45,12 @@ public partial class UINpcRewards : MonoBehaviour
     private void Deactivate()
     {
         panel.SetActive(false);
-        _rewardGoal = null;
+        _rewardManager = null;
     }
 
-    public void Activate(RewardGoal rewards)
+    public void Activate(RewardManager rewards)
     {
-        this._rewardGoal = rewards;
+        _rewardManager = rewards;
         panel.SetActive(true);
     }
 }

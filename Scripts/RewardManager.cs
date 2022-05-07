@@ -5,9 +5,11 @@ using UnityEngine;
 
 namespace WorldQuest.Goals
 {
-    [RequireComponent(typeof(Spawner))]
-    public class RewardGoal : DelayGoal
+    public class RewardManager : NetworkBehaviour
     {
+        public Tier rewardTier;
+        public Spawner spawner;
+        
         [SerializeField, TextArea(1, 30)] public string text;
         public long gold;
         public long experience;
@@ -16,18 +18,19 @@ namespace WorldQuest.Goals
         [SyncVar]
         public Npc rewarderNpc;
 
-        private SyncDictionary<string, float> involvements = new SyncDictionary<string, float>();
-        private SyncDictionary<string, int> ranking = new SyncDictionary<string, int>();
-        private SyncHashSet<string> taken = new SyncHashSet<string>();
+        private readonly SyncDictionary<string, float> involvements = new();
+        private readonly SyncDictionary<string, int> ranking = new();
+        private readonly SyncHashSet<string> taken = new();
 
         private Involvement[] _involvements;
 
         public override void OnStartServer()
         {
             base.OnStartServer();
-            var spawner = GetComponent<Spawner>();
+            rewardTier.onSetup.AddListener(Setup);
+            rewardTier.onTearDown.AddListener(TearDown);
             spawner.onSpawn.AddListener(OnSpawnRewarder);
-            _involvements = transform.parent.GetComponents<Involvement>();
+            _involvements = transform.GetComponents<Involvement>();
         }
 
         private void OnSpawnRewarder(GameObject rewarder)
@@ -36,22 +39,20 @@ namespace WorldQuest.Goals
             
             if (npcReward == null) return;
 
-            npcReward.rewardGoal = this;
+            npcReward.rewardManager = this;
             rewarderNpc = rewarder.GetComponent<Npc>();
         }
 
         [Server]
-        public override void Setup()
+        public void Setup()
         {
-            base.Setup();
             ComputeInvolments();
             ComputeRanking();
         }
 
         [Server]
-        public override void TearDown()
+        public void TearDown()
         {
-            base.TearDown();
             involvements.Clear();
             ranking.Clear();
             taken.Clear();

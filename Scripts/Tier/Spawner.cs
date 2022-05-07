@@ -67,7 +67,7 @@ namespace WorldQuest
         {
             for (int i = 0; i < _spawnedGameObjects.Length; i++)
             {
-                if (_spawnedGameObjects == null)
+                if (_spawnedGameObjects[i] == null)
                 {
                     continue;
                 }

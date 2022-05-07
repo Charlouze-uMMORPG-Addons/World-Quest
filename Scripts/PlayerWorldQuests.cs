@@ -1,48 +1,60 @@
-﻿using Mirror;
+﻿using System;
+using Mirror;
 using UnityEngine;
 using WorldQuest.Goals;
 
 namespace WorldQuest
 {
     [RequireComponent(typeof(Player))]
-    [RequireComponent(typeof(PlayerInventory))]
     public class PlayerWorldQuests : NetworkBehaviour
     {
-        public SyncList<DescriptionManager> managers = new SyncList<DescriptionManager>();
+        public int Count => worldQuests.Count;
 
-        public bool participating => managers.Count > 0;
+        public bool participating => Count > 0;
+
+        private readonly SyncList<GameObject> worldQuests = new();
 
         private Player _player;
 
-        private void Start()
+        private void Awake()
         {
             _player = GetComponent<Player>();
+        }
+
+        public DescriptionManager GetDescriptionManager(int wqIndex)
+        {
+            if (worldQuests.Count > wqIndex)
+            {
+                return worldQuests[wqIndex].GetComponent<DescriptionManager>();
+            }
+
+            throw new ArgumentException("There are no world quest for index " + wqIndex);
         }
 
         [Server]
         public void Add(GameObject worldQuestGo)
         {
-            managers.Add(worldQuestGo.GetComponent<DescriptionManager>());
+            worldQuests.Add(worldQuestGo);
         }
 
         [Server]
         public void Remove(GameObject worldQuestGo)
         {
-            managers.Remove(worldQuestGo.GetComponent<DescriptionManager>());
+            worldQuests.Remove(worldQuestGo);
         }
 
         [Command]
-        public void CmdTakeRewards(RewardGoal rewardGoal)
+        public void CmdTakeRewards(RewardManager rewardManager)
         {
-            if (rewardGoal != null &&
-                rewardGoal.CanTake(_player) &&
+            if (rewardManager != null &&
+                rewardManager.CanTake(_player) &&
                 _player.state == "IDLE" &&
                 _player.target != null &&
                 _player.target.health.current > 0 &&
                 _player.target is Npc npc &&
                 Utils.ClosestDistance(_player, npc) <= _player.interactionRange)
             {
-                rewardGoal.Take(_player);
+                rewardManager.Take(_player);
             }
         }
     }

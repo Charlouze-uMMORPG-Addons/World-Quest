@@ -1,23 +1,33 @@
 ﻿using Mirror;
-using UnityEngine;
 
 namespace WorldQuest.Goals
 {
     public abstract class ProgressGoal : Goal
     {
-        [SyncVar]
-        public int progress;
+        [field: SyncVar]
+        protected int _progress { get; private set; }
 
+        protected abstract bool IsIncrementing { get; }
+
+        protected abstract int StartProgress { get; }
+
+        protected abstract int EndProgress { get; }
+
+        [Server]
         public override void Setup()
         {
-            progress = 0;
+            UpdateProgress(StartProgress);
         }
 
         public override bool IsFulfilled()
         {
-           return progress >= EndProgress;
+            return IsIncrementing ? _progress >= EndProgress : _progress <= EndProgress;
         }
 
-        protected abstract int EndProgress { get; }
+        [Server]
+        protected void UpdateProgress(int newProgress)
+        {
+            if (_progress != newProgress) _progress = newProgress;
+        }
     }
 }

@@ -29,27 +29,20 @@ namespace WorldQuest.Ui
                 return;
             }
 
-            if (!panel.activeSelf)
-            {
-                panel.SetActive(true);
-            }
+            if (!panel.activeSelf) panel.SetActive(true);
 
-            var descriptors = pwq.managers;
-            
-            UIUtils.BalancePrefabs(slotPrefab.gameObject, descriptors.Count, content);
+            UIUtils.BalancePrefabs(slotPrefab.gameObject, pwq.Count, content);
 
-            for (int i = 0; i < descriptors.Count; i++)
+            for (var i = 0; i < pwq.Count; i++)
             {
                 var slot = content.GetChild(i).GetComponent<UIQuestSlot>();
-                var descriptor = descriptors[i];
+                var descriptor = pwq.GetDescriptionManager(i);
 
                 // name button
-                GameObject descriptionPanel = slot.descriptionText.gameObject;
-                string prefix = descriptionPanel.activeSelf ? hidePrefix : expandPrefix;
-                slot.nameButton.GetComponentInChildren<Text>().text = prefix + descriptor.name;
-                slot.nameButton.onClick.SetListener(() => {
-                    descriptionPanel.SetActive(!descriptionPanel.activeSelf);
-                });
+                var descriptionPanel = slot.descriptionText.gameObject;
+                var prefix = descriptionPanel.activeSelf ? hidePrefix : expandPrefix;
+                slot.nameButton.GetComponentInChildren<Text>().text = prefix + descriptor.Name;
+                slot.nameButton.onClick.SetListener(() => { descriptionPanel.SetActive(!descriptionPanel.activeSelf); });
 
                 // description
                 slot.descriptionText.text = descriptor.Description;

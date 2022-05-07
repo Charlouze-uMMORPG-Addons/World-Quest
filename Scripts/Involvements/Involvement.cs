@@ -39,7 +39,7 @@ namespace WorldQuest
         {
             if (!scores.ContainsKey(entity.name))
             {
-                scores[entity.name] += 0;
+                scores[entity.name] = 0;
             }
 
             var totalScore = scores[entity.name] + score * rate;

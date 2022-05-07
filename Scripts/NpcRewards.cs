@@ -12,15 +12,15 @@ namespace WorldQuest
 
         [HideInInspector]
         [SyncVar]
-        public RewardGoal rewardGoal;
+        public RewardManager rewardManager;
 
-        public override bool HasOffer(Player player) => rewardGoal.CanTake(player);
+        public override bool HasOffer(Player player) => rewardManager.CanTake(player);
 
         public override string GetOfferName() => "Rewards";
 
         public override void OnSelect(Player player)
         {
-            UINpcRewards.singleton.Activate(rewardGoal);
+            UINpcRewards.singleton.Activate(rewardManager);
             UINpcDialogue.singleton.panel.SetActive(false);
         }
 
@@ -31,7 +31,7 @@ namespace WorldQuest
 
             var player = Player.localPlayer;
 
-            if (player != null && rewardGoal.CanTake(player))
+            if (player != null && rewardManager.CanTake(player))
             {
                 questOverlay.text = "!";
             }

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Mirror;
 using UnityEngine;
 using UnityEngine.Events;
@@ -9,14 +8,13 @@ namespace WorldQuest.Involvements
     public class DamageDealtInvolvement : Involvement
     {
         public Spawner[] spawners;
-        
-        private Dictionary<uint, UnityAction<Entity, int>> onRecvDamagelisteners =
-            new Dictionary<uint, UnityAction<Entity, int>>();
+
+        private Dictionary<uint, UnityAction<Entity, int>> onRecvDamagelisteners = new();
 
         private void Reset()
         {
             // populating with spawners on children
-            spawners = GetComponentsInChildren<Spawner>();
+            spawners = transform.parent.GetComponentsInChildren<Spawner>();
         }
 
         public override void OnStartServer()
@@ -35,13 +33,7 @@ namespace WorldQuest.Involvements
             var combat = gameObject.GetComponent<Combat>();
             if (combat != null)
             {
-                onRecvDamagelisteners[combat.netId] = (entity, damage) =>
-                {
-                    if (scores.ContainsKey(entity.name))
-                    {
-                        Add(entity, damage * rate);
-                    }
-                };
+                onRecvDamagelisteners[combat.netId] = (entity, damage) => Add(entity, damage * rate);
                 combat.onServerReceivedDamage.AddListener(onRecvDamagelisteners[combat.netId]);
             }
         }
